@@ -104,10 +104,10 @@ let f2ReturnMode = "F2_MENU";
 let f2LoadingText = "";
 let f2LoadingTimer = null;
 
-const bootImg1 = new Image(); bootImg1.crossOrigin = "anonymous"; bootImg1.src = "https://rrstopreporter.github.io/kmbsound_A/start1.png";
-const bootImg2 = new Image(); bootImg2.crossOrigin = "anonymous"; bootImg2.src = "https://rrstopreporter.github.io/kmbsound_A/start2.png";
-const bootAudio = new Audio("https://rrstopreporter.github.io/kmbsound_A/start_sound.wav");
-const sectBeepAudio = new Audio("https://rrstopreporter.github.io/kmbsound_A/beep.wav");
+const bootImg1 = new Image(); bootImg1.crossOrigin = "anonymous"; bootImg1.src = "https://rrstopreporter.github.io/simulator/start1.png";
+const bootImg2 = new Image(); bootImg2.crossOrigin = "anonymous"; bootImg2.src = "https://rrstopreporter.github.io/simulator/start2.png";
+const bootAudio = new Audio("https://rrstopreporter.github.io/simulator/start_sound.wav");
+const sectBeepAudio = new Audio("https://rrstopreporter.github.io/simulator/beep.wav");
 
 let pidsCurrentIndex = 0;
 let pidsPageIndex = 0;
