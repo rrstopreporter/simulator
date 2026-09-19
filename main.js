@@ -1262,7 +1262,7 @@ async function runDisplayLoop(stopData, myToken) {
 }
 
 async function playAnnouncementPhase(itemData, myToken, isSpecial = false) {
-  if (itemData.stopId && itemData.stopId.trim().toUpperCase() === 'SECT100010') {
+  if (itemData.stopId && itemData.stopId.trim().toUpperCase() === 'SECT') {
       if (lastBeepedIndex !== currentIndex) {
           sectBeepAudio.currentTime = 0; sectBeepAudio.play().catch(e => console.warn(e)); lastBeepedIndex = currentIndex;
       }
@@ -1732,9 +1732,9 @@ function pressSkip(dir) {
   if (activeRouteObj && activeRouteObj.data) {
       let oldStop = activeRouteObj.data[currentIndex];
       if (oldStop) {
-          if (oldStop.stopId && oldStop.stopId.trim().toUpperCase() === 'SECT100010') wasSect = true;
-          if (oldStop.pre && oldStop.pre.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT100010')) wasSect = true;
-          if (oldStop.post && oldStop.post.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT100010')) wasSect = true;
+          if (oldStop.stopId && oldStop.stopId.trim().toUpperCase() === 'SECT') wasSect = true;
+          if (oldStop.pre && oldStop.pre.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) wasSect = true;
+          if (oldStop.post && oldStop.post.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) wasSect = true;
       }
   }
 
@@ -1748,9 +1748,9 @@ function pressSkip(dir) {
 
   let currentStopData = activeRouteObj.data[currentIndex]; let isSect = false;
   if (currentStopData) {
-      if (currentStopData.stopId && currentStopData.stopId.trim().toUpperCase() === 'SECT100010') isSect = true;
-      if (currentStopData.pre && currentStopData.pre.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT100010')) isSect = true;
-      if (currentStopData.post && currentStopData.post.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT100010')) isSect = true;
+      if (currentStopData.stopId && currentStopData.stopId.trim().toUpperCase() === 'SECT') isSect = true;
+      if (currentStopData.pre && currentStopData.pre.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) isSect = true;
+      if (currentStopData.post && currentStopData.post.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) isSect = true;
   }
 
   let shouldBeep = false;
