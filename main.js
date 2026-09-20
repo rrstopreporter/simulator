@@ -1262,7 +1262,9 @@ async function runDisplayLoop(stopData, myToken) {
 }
 
 async function playAnnouncementPhase(itemData, myToken, isSpecial = false) {
-  if (itemData.stopId && itemData.stopId.trim().toUpperCase() === 'SECT') {
+  // ★ 檢查係咪 SECT100010 或者 SECT200020
+  const checkId = itemData.stopId ? itemData.stopId.trim().toUpperCase() : "";
+  if (checkId === 'SECT100010' || checkId === 'SECT200020') {
       if (lastBeepedIndex !== currentIndex) {
           sectBeepAudio.currentTime = 0; sectBeepAudio.play().catch(e => console.warn(e)); lastBeepedIndex = currentIndex;
       }
@@ -1728,13 +1730,16 @@ function pressSkip(dir) {
   if (!isPowerOn || isLoading || currentMode.startsWith("BOOTING") || !activeRouteObj) return;
   if (isActivelyAnnouncing) return;
 
+  // ★ 整個小工具判定分段代碼，慳返幾行心機
+  const checkSect = (id) => { const u = id ? id.trim().toUpperCase() : ""; return u === 'SECT100010' || u === 'SECT200020'; };
+
   let wasSect = false;
   if (activeRouteObj && activeRouteObj.data) {
       let oldStop = activeRouteObj.data[currentIndex];
       if (oldStop) {
-          if (oldStop.stopId && oldStop.stopId.trim().toUpperCase() === 'SECT') wasSect = true;
-          if (oldStop.pre && oldStop.pre.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) wasSect = true;
-          if (oldStop.post && oldStop.post.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) wasSect = true;
+          if (checkSect(oldStop.stopId)) wasSect = true;
+          if (oldStop.pre && oldStop.pre.some(p => checkSect(p.stopId))) wasSect = true;
+          if (oldStop.post && oldStop.post.some(p => checkSect(p.stopId))) wasSect = true;
       }
   }
 
@@ -1748,9 +1753,9 @@ function pressSkip(dir) {
 
   let currentStopData = activeRouteObj.data[currentIndex]; let isSect = false;
   if (currentStopData) {
-      if (currentStopData.stopId && currentStopData.stopId.trim().toUpperCase() === 'SECT') isSect = true;
-      if (currentStopData.pre && currentStopData.pre.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) isSect = true;
-      if (currentStopData.post && currentStopData.post.some(p => p.stopId && p.stopId.trim().toUpperCase() === 'SECT')) isSect = true;
+      if (checkSect(currentStopData.stopId)) isSect = true;
+      if (currentStopData.pre && currentStopData.pre.some(p => checkSect(p.stopId))) isSect = true;
+      if (currentStopData.post && currentStopData.post.some(p => checkSect(p.stopId))) isSect = true;
   }
 
   let shouldBeep = false;
