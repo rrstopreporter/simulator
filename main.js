@@ -1289,15 +1289,62 @@ function pressArrow(val) { handleDirection(val === -1 ? 'UP' : 'RIGHT'); }
 function pressDownArrow() { handleDirection('DOWN'); }
 
 function handleDirection(dir) {
-    if (!isPowerOn || isLoading || currentMode === "F2_LOADING" || currentMode.startsWith("BOOTING")) return;
-    if (currentMode === "RUNNING" && isActivelyAnnouncing) return;
+    if (!isPowerOn || isLoading || currentMode.startsWith("BOOTING") || currentMode === "F2_LOADING") return;
 
     let val = (dir === 'UP' || dir === 'LEFT') ? -1 : 1;
 
+    // 1. 處理 F2 模式
+    if (f2Mode !== "NONE") {
+        if (f2Mode === "F2_MENU") {
+            if (dir === 'UP' && f2MenuIndex !== 0 && f2MenuIndex !== 5) f2MenuIndex--;
+            else if (dir === 'DOWN' && f2MenuIndex !== 4 && f2MenuIndex !== 9) f2MenuIndex++;
+            else if (dir === 'LEFT' && f2MenuIndex >= 5) f2MenuIndex -= 5;
+            else if (dir === 'RIGHT' && f2MenuIndex < 5) f2MenuIndex += 5;
+            updateScreens();
+        } else if (f2Mode.startsWith("F2_MENU_")) {
+            f2SubMenuIndex += val;
+            if (f2SubMenuIndex < 0) f2SubMenuIndex = 0;
+            else if (f2SubMenuIndex >= f2SubMenuList.length) f2SubMenuIndex = f2SubMenuList.length - 1;
+            updateScreens();
+        } else if (f2Mode === "F2_SETTING_BRIGHT") {
+            settingBrightness += val; if (settingBrightness < 0) settingBrightness = 0; if (settingBrightness > 4) settingBrightness = 4; updateScreens();
+        } else if (f2Mode === "F2_SETTING_VOL") {
+            settingVolume += val; if (settingVolume < 0) settingVolume = 0; if (settingVolume > 8) settingVolume = 8; updateScreens();
+        } else if (f2Mode === "F2_SETTING_ACCURACY") {
+            settingAccuracy += val; if (settingAccuracy < 0) settingAccuracy = 0; if (settingAccuracy > 5) settingAccuracy = 5; updateScreens();
+        } else if (f2Mode === "F2_SAMPLING") {
+            if (activeRouteObj && activeRouteObj.data && activeRouteObj.data.length > 0) {
+                if (val === 1) {
+                    samplingIndex++;
+                    if (samplingIndex >= activeRouteObj.data.length || (activeRouteObj.data[samplingIndex].tc && activeRouteObj.data[samplingIndex].tc.includes("多謝"))) {
+                        samplingIndex = 0;
+                    }
+                    updateScreens();
+                } else if (val === -1) {
+                    if (samplingIndex > 0) {
+                        samplingIndex--;
+                        updateScreens();
+                    }
+                }
+            }
+        }
+        return;
+    }
+
+    // 2. ★ 核心防呆解鎖：報站期間允許強行撳向下掣跳站
+    if (activeRouteObj && isActivelyAnnouncing) {
+        if (currentMode === "RUNNING" && dir === 'DOWN') {
+            return pressAnnounce(false);
+        }
+        return; // 撳其他方向掣就依然鎖死
+    }
+
+    // 3. 正常行車時撳向下掣 -> 報下一站
     if (currentMode === "RUNNING" && dir === 'DOWN') {
         return pressAnnounce(false);
     }
 
+    // 4. 選單選擇模式
     if (currentMode === "SELECT_ROUTE") {
         commitMultiTap();
         if (filteredRouteKeysList.length > 0) {
@@ -1312,37 +1359,6 @@ function handleDirection(dir) {
     }
     else if (currentMode === "SELECT_BOUND") { selectedBoundIndex = (selectedBoundIndex + val + boundsList.length) % boundsList.length; updateScreens(); }
     else if (currentMode === "SELECT_TYPE") { selectedTypeIndex = (selectedTypeIndex + val + typesList.length) % typesList.length; updateScreens(); }
-
-    else if (currentMode === "F2_MENU") {
-        if (dir === 'UP' && f2MenuIndex !== 0 && f2MenuIndex !== 5) f2MenuIndex--;
-        else if (dir === 'DOWN' && f2MenuIndex !== 4 && f2MenuIndex !== 9) f2MenuIndex++;
-        else if (dir === 'LEFT' && f2MenuIndex >= 5) f2MenuIndex -= 5;
-        else if (dir === 'RIGHT' && f2MenuIndex < 5) f2MenuIndex += 5;
-        updateScreens();
-    }
-
-    else if (currentMode.startsWith("F2_MENU_")) {
-        f2SubMenuIndex += val;
-        if (f2SubMenuIndex < 0) f2SubMenuIndex = 0;
-        else if (f2SubMenuIndex >= f2SubMenuList.length) f2SubMenuIndex = f2SubMenuList.length - 1;
-        updateScreens();
-    }
-    else if (currentMode === "F2_SETTING_BRIGHT") {
-        settingBrightness += val;
-        if (settingBrightness < 0) settingBrightness = 0;
-        if (settingBrightness > 4) settingBrightness = 4;
-        updateScreens();
-    } else if (currentMode === "F2_SETTING_VOL") {
-        settingVolume += val;
-        if (settingVolume < 0) settingVolume = 0;
-        if (settingVolume > 8) settingVolume = 8;
-        updateScreens();
-    } else if (currentMode === "F2_SETTING_ACCURACY") {
-        settingAccuracy += val;
-        if (settingAccuracy < 0) settingAccuracy = 0;
-        if (settingAccuracy > 5) settingAccuracy = 5;
-        updateScreens();
-    }
 }
 
 async function pressPassengerAtten() {
@@ -1632,72 +1648,6 @@ function pressEnter() {
     menuMode = "NONE"; currentMode = "RUNNING"; currentIndex = 0; ledCurrentIndex = 0; pidsCurrentIndex = 0; isStarted = false; attenCodeNum = 0; lastBeepedIndex = -1;
     saveState(); updateScreens(); stopPidsTimers(); startPidsTimers(); resumeDisplayLoopNoAudio();
   }
-}
-
-function handleDirection(dir) {
-    if (!isPowerOn || isLoading || currentMode.startsWith("BOOTING")) return;
-
-    let val = (dir === 'UP' || dir === 'LEFT') ? -1 : 1;
-
-    if (f2Mode !== "NONE") {
-        if (f2Mode === "F2_MENU") {
-            if (dir === 'UP' && f2MenuIndex !== 0 && f2MenuIndex !== 5) f2MenuIndex--;
-            else if (dir === 'DOWN' && f2MenuIndex !== 4 && f2MenuIndex !== 9) f2MenuIndex++;
-            else if (dir === 'LEFT' && f2MenuIndex >= 5) f2MenuIndex -= 5;
-            else if (dir === 'RIGHT' && f2MenuIndex < 5) f2MenuIndex += 5;
-            updateScreens();
-        } else if (f2Mode.startsWith("F2_MENU_")) {
-            f2SubMenuIndex += val;
-            if (f2SubMenuIndex < 0) f2SubMenuIndex = 0;
-            else if (f2SubMenuIndex >= f2SubMenuList.length) f2SubMenuIndex = f2SubMenuList.length - 1;
-            updateScreens();
-        } else if (f2Mode === "F2_SETTING_BRIGHT") {
-            settingBrightness += val; if (settingBrightness < 0) settingBrightness = 0; if (settingBrightness > 4) settingBrightness = 4; updateScreens();
-        } else if (f2Mode === "F2_SETTING_VOL") {
-            settingVolume += val; if (settingVolume < 0) settingVolume = 0; if (settingVolume > 8) settingVolume = 8; updateScreens();
-        } else if (f2Mode === "F2_SETTING_ACCURACY") {
-            settingAccuracy += val; if (settingAccuracy < 0) settingAccuracy = 0; if (settingAccuracy > 5) settingAccuracy = 5; updateScreens();
-        } else if (f2Mode === "F2_SAMPLING") {
-            if (activeRouteObj && activeRouteObj.data && activeRouteObj.data.length > 0) {
-                if (val === 1) {
-                    samplingIndex++;
-                    // 向下跳站：如果去到最尾，或者遇到「多謝乘搭」，即刻變返 000
-                    if (samplingIndex >= activeRouteObj.data.length || (activeRouteObj.data[samplingIndex].tc && activeRouteObj.data[samplingIndex].tc.includes("多謝"))) {
-                        samplingIndex = 0;
-                    }
-                    updateScreens();
-                } else if (val === -1) {
-                    // 向上跳站：只限大過 0 嗰陣先有反應，000 撳上掣會直接無反應
-                    if (samplingIndex > 0) {
-                        samplingIndex--;
-                        updateScreens();
-                    }
-                }
-            }
-        }
-        return;
-    }
-
-    if (activeRouteObj && isActivelyAnnouncing) return;
-
-    if (currentMode === "RUNNING" && dir === 'DOWN') {
-        return pressAnnounce(false);
-    }
-
-    if (currentMode === "SELECT_ROUTE") {
-        commitMultiTap();
-        if (filteredRouteKeysList.length > 0) {
-            if (!listNavigated) {
-                listNavigated = true;
-                if (val !== 1) selectedRouteIndex = (selectedRouteIndex + val + filteredRouteKeysList.length) % filteredRouteKeysList.length;
-            }
-            else { selectedRouteIndex = (selectedRouteIndex + val + filteredRouteKeysList.length) % filteredRouteKeysList.length; }
-            searchInput = filteredRouteKeysList[selectedRouteIndex]; lastSearchQuery = searchInput.toLowerCase();
-            isNoMatch = false; showRouteNotFound = false; updateScreens();
-        }
-    }
-    else if (currentMode === "SELECT_BOUND") { selectedBoundIndex = (selectedBoundIndex + val + boundsList.length) % boundsList.length; updateScreens(); }
-    else if (currentMode === "SELECT_TYPE") { selectedTypeIndex = (selectedTypeIndex + val + typesList.length) % typesList.length; updateScreens(); }
 }
 
 function pressDirectionMenu() {
