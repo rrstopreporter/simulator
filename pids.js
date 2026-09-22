@@ -301,7 +301,7 @@
       applyAutoSqueeze();
     }
     
-    function generateMidText(rawText, isEng, isLeftBox) {
+function generateMidText(rawText, isEng, isLeftBox) {
         if (!rawText) return "";
         let parts = [];
         
@@ -309,10 +309,13 @@
             let mergedText = rawText.replace(/\|/g, ' ').trim(); 
             parts = mergedText.split(/[>~]/).map(s => s.trim()).filter(s => s); 
         } else {
-            let pureText = rawText.replace(/~/g, '').trim();
+            // ★ 核心修改：將 rawText 裡面嘅 | 符號徹底刪除
+            let cleanedRaw = rawText.replace(/\|/g, '');
+            let pureText = cleanedRaw.replace(/~/g, '').trim();
+            
             if (pureText.length <= 9) { parts = [pureText]; } 
             else {
-                parts = rawText.split(/[>~]/).map(s => s.trim()).filter(s => s);
+                parts = cleanedRaw.split(/[>~]/).map(s => s.trim()).filter(s => s);
                 if (parts.length >= 3) { parts = [parts[0] + parts[1], parts.slice(2).join('')]; }
             }
         }
