@@ -19,7 +19,7 @@ function resetZoom() {
 /* =========================================
    全局變數宣告
    ========================================= */
-const GOOGLE_DRIVE_XLSX_ID = '1D4gTquDZD8Tb0CJ1Mhmne8eg3sFjRrml';
+const GOOGLE_DRIVE_XLSX_ID = '188l5UhBZCs5mXlgId8o6dT_0fVqBF-hI';
 const KEY_MAP = {
   '1': ['1','A','B','C'],
   '2': ['2','D','E','F'],
